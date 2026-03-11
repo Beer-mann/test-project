@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-accent: #18233f;
+      --panel: rgba(10, 16, 34, 0.82);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --text: #f5f7ff;
+      --muted: #98a4c7;
+      --button: rgba(255, 255, 255, 0.08);
+      --button-hover: rgba(255, 255, 255, 0.14);
+      --operator: linear-gradient(135deg, #ff8a5b, #ff5f6d);
+      --equals: linear-gradient(135deg, #52c7ff, #5a7cff);
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      --radius: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: var(--text);
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(82, 199, 255, 0.25), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(255, 95, 109, 0.22), transparent 28%),
+        linear-gradient(160deg, var(--bg), var(--bg-accent));
+    }
+
+    .calculator {
+      width: min(100%, 360px);
+      padding: 22px;
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius);
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .display {
+      margin-bottom: 18px;
+      padding: 18px 20px;
+      min-height: 108px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 8px;
+      text-align: right;
+      overflow: hidden;
+    }
+
+    .display-history {
+      min-height: 20px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      letter-spacing: 0.03em;
+    }
+
+    .display-current {
+      font-size: clamp(2rem, 6vw, 3rem);
+      font-weight: 700;
+      line-height: 1.1;
+      word-break: break-all;
+    }
+
+    .keys {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 18px;
+      padding: 18px;
+      color: var(--text);
+      background: var(--button);
+      font: inherit;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    button:hover {
+      background: var(--button-hover);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.99);
+    }
+
+    .span-2 {
+      grid-column: span 2;
+    }
+
+    .operator {
+      background: var(--operator);
+    }
+
+    .equals {
+      background: var(--equals);
+    }
+
+    .utility {
+      color: #d6ddf8;
+    }
+  </style>
+</head>
+<body>
+  <main class="calculator" aria-label="Calculator">
+    <section class="display" aria-live="polite">
+      <div class="display-history" id="history"></div>
+      <div class="display-current" id="current">0</div>
+    </section>
+
+    <section class="keys">
+      <button class="utility" data-action="clear">AC</button>
+      <button class="utility" data-action="delete">DEL</button>
+      <button class="utility" data-action="decimal">.</button>
+      <button class="operator" data-action="operator" data-value="/">/</button>
+
+      <button data-action="number" data-value="7">7</button>
+      <button data-action="number" data-value="8">8</button>
+      <button data-action="number" data-value="9">9</button>
+      <button class="operator" data-action="operator" data-value="*">*</button>
+
+      <button data-action="number" data-value="4">4</button>
+      <button data-action="number" data-value="5">5</button>
+      <button data-action="number" data-value="6">6</button>
+      <button class="operator" data-action="operator" data-value="-">-</button>
+
+      <button data-action="number" data-value="1">1</button>
+      <button data-action="number" data-value="2">2</button>
+      <button data-action="number" data-value="3">3</button>
+      <button class="operator" data-action="operator" data-value="+">+</button>
+
+      <button class="span-2" data-action="number" data-value="0">0</button>
+      <button class="equals" data-action="equals">=</button>
+    </section>
+  </main>
+
+  <script>
+    const currentDisplay = document.getElementById("current");
+    const historyDisplay = document.getElementById("history");
+    const keys = document.querySelector(".keys");
+
+    const state = {
+      current: "0",
+      previous: "",
+      operator: "",
+      overwrite: false
+    };
+
+    const formatValue = (value) => {
+      if (value === "Error") {
+        return value;
+      }
+
+      const number = Number(value);
+      if (!Number.isFinite(number)) {
+        return "Error";
+      }
+
+      return new Intl.NumberFormat("en-US", {
+        maximumFractionDigits: 10
+      }).format(number);
+    };
+
+    const render = () => {
+      currentDisplay.textContent = state.current === "Error" ? "Error" : formatValue(state.current);
+      historyDisplay.textContent = state.previous && state.operator
+        ? `${formatValue(state.previous)} ${state.operator}`
+        : "";
+    };
+
+    const inputNumber = (digit) => {
+      if (state.current === "Error" || state.overwrite) {
+        state.current = digit;
+        state.overwrite = false;
+        return;
+      }
+
+      state.current = state.current === "0" ? digit : state.current + digit;
+    };
+
+    const inputDecimal = () => {
+      if (state.current === "Error" || state.overwrite) {
+        state.current = "0.";
+        state.overwrite = false;
+        return;
+      }
+
+      if (!state.current.includes(".")) {
+        state.current += ".";
+      }
+    };
+
+    const calculate = () => {
+      const prev = Number(state.previous);
+      const current = Number(state.current);
+
+      if (!state.operator || Number.isNaN(prev) || Number.isNaN(current)) {
+        return state.current;
+      }
+
+      switch (state.operator) {
+        case "+":
+          return String(prev + current);
+        case "-":
+          return String(prev - current);
+        case "*":
+          return String(prev * current);
+        case "/":
+          return current === 0 ? "Error" : String(prev / current);
+        default:
+          return state.current;
+      }
+    };
+
+    const chooseOperator = (operator) => {
+      if (state.current === "Error") {
+        return;
+      }
+
+      if (state.previous && !state.overwrite) {
+        state.current = calculate();
+        if (state.current === "Error") {
+          state.previous = "";
+          state.operator = "";
+          return;
+        }
+      }
+
+      state.previous = state.current;
+      state.operator = operator;
+      state.overwrite = true;
+    };
+
+    const evaluate = () => {
+      if (!state.previous || !state.operator || state.current === "Error") {
+        return;
+      }
+
+      state.current = calculate();
+      state.previous = "";
+      state.operator = "";
+      state.overwrite = true;
+    };
+
+    const clearAll = () => {
+      state.current = "0";
+      state.previous = "";
+      state.operator = "";
+      state.overwrite = false;
+    };
+
+    const deleteLast = () => {
+      if (state.overwrite || state.current === "Error") {
+        state.current = "0";
+        state.overwrite = false;
+        return;
+      }
+
+      state.current = state.current.length > 1 ? state.current.slice(0, -1) : "0";
+    };
+
+    keys.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) {
+        return;
+      }
+
+      const { action, value } = button.dataset;
+
+      if (action === "number") {
+        inputNumber(value);
+      } else if (action === "decimal") {
+        inputDecimal();
+      } else if (action === "operator") {
+        chooseOperator(value);
+      } else if (action === "equals") {
+        evaluate();
+      } else if (action === "clear") {
+        clearAll();
+      } else if (action === "delete") {
+        deleteLast();
+      }
+
+      render();
+    });
+
+    window.addEventListener("keydown", (event) => {
+      const { key } = event;
+
+      if (/^\d$/.test(key)) {
+        inputNumber(key);
+      } else if (key === ".") {
+        inputDecimal();
+      } else if (["+", "-", "*", "/"].includes(key)) {
+        chooseOperator(key);
+      } else if (key === "Enter" || key === "=") {
+        event.preventDefault();
+        evaluate();
+      } else if (key === "Backspace") {
+        deleteLast();
+      } else if (key === "Escape") {
+        clearAll();
+      } else {
+        return;
+      }
+
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
