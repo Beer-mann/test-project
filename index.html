@@ -3,21 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calculator</title>
+  <title>Northstar Calculator</title>
   <style>
     :root {
-      --bg: #0b1020;
-      --bg-accent: #18233f;
-      --panel: rgba(10, 16, 34, 0.82);
-      --panel-border: rgba(255, 255, 255, 0.08);
-      --text: #f5f7ff;
-      --muted: #98a4c7;
-      --button: rgba(255, 255, 255, 0.08);
-      --button-hover: rgba(255, 255, 255, 0.14);
-      --operator: linear-gradient(135deg, #ff8a5b, #ff5f6d);
-      --equals: linear-gradient(135deg, #52c7ff, #5a7cff);
-      --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-      --radius: 28px;
+      --page-top: #fbf3e7;
+      --page-bottom: #dce7f5;
+      --ink: #14213d;
+      --muted: #5e6b85;
+      --panel: rgba(255, 252, 247, 0.78);
+      --panel-border: rgba(20, 33, 61, 0.1);
+      --display: linear-gradient(180deg, #14213d, #1f3b66);
+      --display-text: #fdfbf7;
+      --display-muted: rgba(253, 251, 247, 0.64);
+      --button: rgba(255, 255, 255, 0.58);
+      --button-strong: #fff7ef;
+      --button-hover: rgba(255, 255, 255, 0.9);
+      --operator: linear-gradient(135deg, #ff8a3d, #ffb347);
+      --equals: linear-gradient(135deg, #1f8a70, #3eb489);
+      --shadow: 0 28px 70px rgba(20, 33, 61, 0.16);
+      --radius-xl: 36px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
     }
 
     * {
@@ -27,75 +33,236 @@
     body {
       margin: 0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      color: var(--text);
-      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      padding: 28px;
+      color: var(--ink);
+      font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(82, 199, 255, 0.25), transparent 30%),
-        radial-gradient(circle at bottom right, rgba(255, 95, 109, 0.22), transparent 28%),
-        linear-gradient(160deg, var(--bg), var(--bg-accent));
+        radial-gradient(circle at top left, rgba(255, 179, 71, 0.36), transparent 26%),
+        radial-gradient(circle at right, rgba(31, 138, 112, 0.18), transparent 30%),
+        linear-gradient(180deg, var(--page-top), var(--page-bottom));
     }
 
-    .calculator {
-      width: min(100%, 360px);
-      padding: 22px;
+    .app-shell {
+      width: min(1100px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) minmax(320px, 420px);
+      justify-content: center;
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
       border: 1px solid var(--panel-border);
-      border-radius: var(--radius);
+      border-radius: var(--radius-xl);
       background: var(--panel);
       backdrop-filter: blur(18px);
       box-shadow: var(--shadow);
     }
 
-    .display {
-      margin-bottom: 18px;
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.32), transparent 42%);
+      pointer-events: none;
+    }
+
+    .hero {
+      padding: 30px;
+      display: grid;
+      gap: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--muted);
+      font-size: 0.9rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ff8a3d, #1f8a70);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.4rem, 6vw, 4.6rem);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.7;
+      max-width: 34ch;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card,
+    .shortcut-card,
+    .history-card {
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(20, 33, 61, 0.08);
+      background: rgba(255, 255, 255, 0.54);
+    }
+
+    .stat-card {
+      padding: 16px;
+    }
+
+    .stat-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.83rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .stat-card strong {
+      font-size: 1.35rem;
+      line-height: 1.1;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .shortcut-card,
+    .history-card {
       padding: 18px 20px;
-      min-height: 108px;
-      border-radius: 22px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .shortcut-card h2,
+    .history-card h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .shortcut-card p,
+    .history-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .shortcut-list {
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+      color: var(--ink);
+    }
+
+    .shortcut-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 0.94rem;
+    }
+
+    kbd {
+      padding: 4px 8px;
+      border-radius: 10px;
+      background: rgba(20, 33, 61, 0.08);
+      border: 1px solid rgba(20, 33, 61, 0.08);
+      font: inherit;
+      font-size: 0.84rem;
+    }
+
+    .calculator {
+      padding: 22px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .display {
+      padding: 24px;
+      min-height: 210px;
+      border-radius: 30px;
+      background: var(--display);
+      color: var(--display-text);
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      gap: 8px;
+      gap: 12px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .display-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      color: var(--display-muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .display-expression,
+    .display-history {
+      min-height: 22px;
+      color: var(--display-muted);
       text-align: right;
-      overflow: hidden;
+      word-break: break-word;
     }
 
     .display-history {
-      min-height: 20px;
-      color: var(--muted);
-      font-size: 0.95rem;
-      letter-spacing: 0.03em;
+      font-size: 0.98rem;
     }
 
     .display-current {
-      font-size: clamp(2rem, 6vw, 3rem);
+      text-align: right;
+      font-size: clamp(2.8rem, 8vw, 4.4rem);
       font-weight: 700;
-      line-height: 1.1;
+      line-height: 1;
+      letter-spacing: -0.04em;
       word-break: break-all;
     }
 
     .keys {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 12px;
     }
 
     button {
       appearance: none;
       border: 0;
-      border-radius: 18px;
-      padding: 18px;
-      color: var(--text);
+      min-height: 72px;
+      border-radius: var(--radius-md);
       background: var(--button);
+      color: var(--ink);
       font: inherit;
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-size: 1.15rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      transition: transform 140ms ease, background 140ms ease, box-shadow 140ms ease;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
     }
 
     button:hover {
@@ -107,230 +274,182 @@
       transform: translateY(1px) scale(0.99);
     }
 
-    .span-2 {
-      grid-column: span 2;
+    .utility {
+      background: var(--button-strong);
     }
 
     .operator {
       background: var(--operator);
+      color: #392100;
     }
 
     .equals {
       background: var(--equals);
+      color: #f3fff8;
     }
 
-    .utility {
-      color: #d6ddf8;
+    .span-2 {
+      grid-column: span 2;
+    }
+
+    .history-list {
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+
+    .history-item {
+      display: grid;
+      gap: 4px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.66);
+    }
+
+    .history-expression {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .history-result {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .empty-history {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 920px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        order: 2;
+      }
+
+      .calculator {
+        order: 1;
+      }
+    }
+
+    @media (max-width: 560px) {
+      body {
+        padding: 16px;
+      }
+
+      .hero,
+      .calculator {
+        padding: 18px;
+      }
+
+      .display {
+        min-height: 190px;
+        padding: 20px;
+      }
+
+      button {
+        min-height: 64px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <main class="calculator" aria-label="Calculator">
-    <section class="display" aria-live="polite">
-      <div class="display-history" id="history"></div>
-      <div class="display-current" id="current">0</div>
+  <main class="app-shell">
+    <section class="panel hero" aria-label="Northstar calculator overview">
+      <div class="eyebrow">Modern web UI</div>
+      <div>
+        <h1>Northstar Calculator</h1>
+        <p>
+          A polished browser calculator with keyboard support, live expression context,
+          percent and sign toggles, and a rolling result tape.
+        </p>
+      </div>
+
+      <section class="stats" aria-label="Calculator features">
+        <article class="stat-card">
+          <span>Input</span>
+          <strong>Keyboard + Click</strong>
+        </article>
+        <article class="stat-card">
+          <span>Functions</span>
+          <strong>Basic ops, %, +/-</strong>
+        </article>
+        <article class="stat-card">
+          <span>History</span>
+          <strong>Latest 5 results</strong>
+        </article>
+      </section>
+
+      <section class="stack">
+        <article class="shortcut-card">
+          <h2>Shortcuts</h2>
+          <p>Use the keyboard exactly like a physical calculator.</p>
+          <ul class="shortcut-list">
+            <li><span>Evaluate</span><kbd>Enter</kbd></li>
+            <li><span>Clear all</span><kbd>Esc</kbd></li>
+            <li><span>Delete digit</span><kbd>Backspace</kbd></li>
+          </ul>
+        </article>
+
+        <article class="history-card">
+          <h2>Result Tape</h2>
+          <p>Recent calculations stay visible so you can reuse or verify them quickly.</p>
+          <ul class="history-list" id="history-list">
+            <li class="empty-history">No calculations yet.</li>
+          </ul>
+        </article>
+      </section>
     </section>
 
-    <section class="keys">
-      <button class="utility" data-action="clear">AC</button>
-      <button class="utility" data-action="delete">DEL</button>
-      <button class="utility" data-action="decimal">.</button>
-      <button class="operator" data-action="operator" data-value="/">/</button>
+    <section class="panel calculator" aria-label="Calculator">
+      <section class="display" aria-live="polite">
+        <div class="display-label">
+          <span>Ready</span>
+          <span>Precision 10</span>
+        </div>
+        <div class="display-expression" id="expression"></div>
+        <div class="display-history" id="history"></div>
+        <div class="display-current" id="current">0</div>
+      </section>
 
-      <button data-action="number" data-value="7">7</button>
-      <button data-action="number" data-value="8">8</button>
-      <button data-action="number" data-value="9">9</button>
-      <button class="operator" data-action="operator" data-value="*">*</button>
+      <section class="keys">
+        <button class="utility" data-action="clear">AC</button>
+        <button class="utility" data-action="delete">DEL</button>
+        <button class="utility" data-action="sign">+/-</button>
+        <button class="operator" data-action="operator" data-value="/">/</button>
 
-      <button data-action="number" data-value="4">4</button>
-      <button data-action="number" data-value="5">5</button>
-      <button data-action="number" data-value="6">6</button>
-      <button class="operator" data-action="operator" data-value="-">-</button>
+        <button class="utility" data-action="percent">%</button>
+        <button data-action="number" data-value="7">7</button>
+        <button data-action="number" data-value="8">8</button>
+        <button data-action="number" data-value="9">9</button>
 
-      <button data-action="number" data-value="1">1</button>
-      <button data-action="number" data-value="2">2</button>
-      <button data-action="number" data-value="3">3</button>
-      <button class="operator" data-action="operator" data-value="+">+</button>
+        <button class="operator" data-action="operator" data-value="*">*</button>
+        <button data-action="number" data-value="4">4</button>
+        <button data-action="number" data-value="5">5</button>
+        <button data-action="number" data-value="6">6</button>
 
-      <button class="span-2" data-action="number" data-value="0">0</button>
-      <button class="equals" data-action="equals">=</button>
+        <button class="operator" data-action="operator" data-value="-">-</button>
+        <button data-action="number" data-value="1">1</button>
+        <button data-action="number" data-value="2">2</button>
+        <button data-action="number" data-value="3">3</button>
+
+        <button class="operator" data-action="operator" data-value="+">+</button>
+        <button class="span-2" data-action="number" data-value="0">0</button>
+        <button data-action="decimal">.</button>
+        <button class="equals" data-action="equals">=</button>
+      </section>
     </section>
   </main>
 
-  <script>
-    const currentDisplay = document.getElementById("current");
-    const historyDisplay = document.getElementById("history");
-    const keys = document.querySelector(".keys");
-
-    const state = {
-      current: "0",
-      previous: "",
-      operator: "",
-      overwrite: false
-    };
-
-    const formatValue = (value) => {
-      if (value === "Error") {
-        return value;
-      }
-
-      const number = Number(value);
-      if (!Number.isFinite(number)) {
-        return "Error";
-      }
-
-      return new Intl.NumberFormat("en-US", {
-        maximumFractionDigits: 10
-      }).format(number);
-    };
-
-    const render = () => {
-      currentDisplay.textContent = state.current === "Error" ? "Error" : formatValue(state.current);
-      historyDisplay.textContent = state.previous && state.operator
-        ? `${formatValue(state.previous)} ${state.operator}`
-        : "";
-    };
-
-    const inputNumber = (digit) => {
-      if (state.current === "Error" || state.overwrite) {
-        state.current = digit;
-        state.overwrite = false;
-        return;
-      }
-
-      state.current = state.current === "0" ? digit : state.current + digit;
-    };
-
-    const inputDecimal = () => {
-      if (state.current === "Error" || state.overwrite) {
-        state.current = "0.";
-        state.overwrite = false;
-        return;
-      }
-
-      if (!state.current.includes(".")) {
-        state.current += ".";
-      }
-    };
-
-    const calculate = () => {
-      const prev = Number(state.previous);
-      const current = Number(state.current);
-
-      if (!state.operator || Number.isNaN(prev) || Number.isNaN(current)) {
-        return state.current;
-      }
-
-      switch (state.operator) {
-        case "+":
-          return String(prev + current);
-        case "-":
-          return String(prev - current);
-        case "*":
-          return String(prev * current);
-        case "/":
-          return current === 0 ? "Error" : String(prev / current);
-        default:
-          return state.current;
-      }
-    };
-
-    const chooseOperator = (operator) => {
-      if (state.current === "Error") {
-        return;
-      }
-
-      if (state.previous && !state.overwrite) {
-        state.current = calculate();
-        if (state.current === "Error") {
-          state.previous = "";
-          state.operator = "";
-          return;
-        }
-      }
-
-      state.previous = state.current;
-      state.operator = operator;
-      state.overwrite = true;
-    };
-
-    const evaluate = () => {
-      if (!state.previous || !state.operator || state.current === "Error") {
-        return;
-      }
-
-      state.current = calculate();
-      state.previous = "";
-      state.operator = "";
-      state.overwrite = true;
-    };
-
-    const clearAll = () => {
-      state.current = "0";
-      state.previous = "";
-      state.operator = "";
-      state.overwrite = false;
-    };
-
-    const deleteLast = () => {
-      if (state.overwrite || state.current === "Error") {
-        state.current = "0";
-        state.overwrite = false;
-        return;
-      }
-
-      state.current = state.current.length > 1 ? state.current.slice(0, -1) : "0";
-    };
-
-    keys.addEventListener("click", (event) => {
-      const button = event.target.closest("button");
-      if (!button) {
-        return;
-      }
-
-      const { action, value } = button.dataset;
-
-      if (action === "number") {
-        inputNumber(value);
-      } else if (action === "decimal") {
-        inputDecimal();
-      } else if (action === "operator") {
-        chooseOperator(value);
-      } else if (action === "equals") {
-        evaluate();
-      } else if (action === "clear") {
-        clearAll();
-      } else if (action === "delete") {
-        deleteLast();
-      }
-
-      render();
-    });
-
-    window.addEventListener("keydown", (event) => {
-      const { key } = event;
-
-      if (/^\d$/.test(key)) {
-        inputNumber(key);
-      } else if (key === ".") {
-        inputDecimal();
-      } else if (["+", "-", "*", "/"].includes(key)) {
-        chooseOperator(key);
-      } else if (key === "Enter" || key === "=") {
-        event.preventDefault();
-        evaluate();
-      } else if (key === "Backspace") {
-        deleteLast();
-      } else if (key === "Escape") {
-        clearAll();
-      } else {
-        return;
-      }
-
-      render();
-    });
-
-    render();
-  </script>
+  <script src="./calculator-ui.js"></script>
 </body>
 </html>
