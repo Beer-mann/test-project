@@ -5,6 +5,11 @@ const createDom = () =>
   new JSDOM(`
     <main class="app-shell">
       <section class="panel hero">
+        <button data-action="clear-history" type="button">Clear tape</button>
+        <div id="status-badge">Live</div>
+        <div id="metric-operations">0</div>
+        <div id="metric-last-result">None yet</div>
+        <div id="metric-status">Ready for input</div>
         <ul id="history-list"></ul>
       </section>
       <section class="panel calculator">
@@ -65,6 +70,9 @@ describe("calculator-ui", () => {
     expect(dom.window.document.getElementById("current").textContent).toBe("15");
     expect(dom.window.document.getElementById("history").textContent).toBe("");
     expect(dom.window.document.getElementById("expression").textContent).toBe("7 + 8 =");
+    expect(dom.window.document.getElementById("metric-operations").textContent).toBe("1");
+    expect(dom.window.document.getElementById("metric-last-result").textContent).toBe("15");
+    expect(dom.window.document.getElementById("metric-status").textContent).toBe("Last result saved to tape");
     expect(dom.window.document.querySelectorAll(".history-item")).toHaveLength(1);
     expect(dom.window.document.getElementById("history-list").textContent).toContain("7 + 8");
   });
@@ -153,6 +161,25 @@ describe("calculator-ui", () => {
     expect(app.state.current).toBe("5");
     expect(app.state.expression).toBe("9 - 4 =");
     expect(dom.window.document.getElementById("current").textContent).toBe("5");
+  });
+
+  test("clears the result tape without resetting lifetime calculation count", () => {
+    const dom = createDom();
+    const app = createCalculatorApp(dom.window.document, dom.window);
+
+    app.handleAction("number", "2");
+    app.handleAction("operator", "+");
+    app.handleAction("number", "2");
+    app.handleAction("equals");
+
+    expect(app.state.history).toHaveLength(1);
+
+    click(dom.window.document, '[data-action="clear-history"]');
+
+    expect(app.state.history).toHaveLength(0);
+    expect(dom.window.document.querySelector(".empty-history").textContent).toBe("No calculations yet.");
+    expect(dom.window.document.getElementById("metric-operations").textContent).toBe("1");
+    expect(dom.window.document.getElementById("metric-last-result").textContent).toBe("None yet");
   });
 
   test("renders empty history and supports delete plus clear keyboard shortcuts", () => {

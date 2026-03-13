@@ -4,23 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Northstar Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --page-top: #fbf3e7;
-      --page-bottom: #dce7f5;
       --ink: #14213d;
-      --muted: #5e6b85;
-      --panel: rgba(255, 252, 247, 0.78);
-      --panel-border: rgba(20, 33, 61, 0.1);
-      --display: linear-gradient(180deg, #14213d, #1f3b66);
-      --display-text: #fdfbf7;
-      --display-muted: rgba(253, 251, 247, 0.64);
-      --button: rgba(255, 255, 255, 0.58);
-      --button-strong: #fff7ef;
-      --button-hover: rgba(255, 255, 255, 0.9);
-      --operator: linear-gradient(135deg, #ff8a3d, #ffb347);
-      --equals: linear-gradient(135deg, #1f8a70, #3eb489);
-      --shadow: 0 28px 70px rgba(20, 33, 61, 0.16);
+      --muted: #5d6a82;
+      --paper: rgba(255, 248, 239, 0.84);
+      --paper-strong: rgba(255, 252, 247, 0.95);
+      --line: rgba(20, 33, 61, 0.12);
+      --night: #102038;
+      --night-soft: #1a355b;
+      --sun: #ff9a3d;
+      --mint: #2d9c86;
+      --rose: #ef6f6c;
+      --shadow: 0 32px 90px rgba(20, 33, 61, 0.18);
       --radius-xl: 36px;
       --radius-lg: 24px;
       --radius-md: 18px;
@@ -33,32 +32,56 @@
     body {
       margin: 0;
       min-height: 100vh;
-      padding: 28px;
       color: var(--ink);
-      font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+      font-family: "Space Grotesk", sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(255, 179, 71, 0.36), transparent 26%),
-        radial-gradient(circle at right, rgba(31, 138, 112, 0.18), transparent 30%),
-        linear-gradient(180deg, var(--page-top), var(--page-bottom));
+        radial-gradient(circle at 15% 20%, rgba(255, 154, 61, 0.26), transparent 24%),
+        radial-gradient(circle at 85% 12%, rgba(45, 156, 134, 0.22), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(20, 33, 61, 0.12), transparent 34%),
+        linear-gradient(180deg, #f6eadc 0%, #d9e6f4 100%);
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      width: 38vw;
+      height: 38vw;
+      border-radius: 999px;
+      filter: blur(40px);
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    body::before {
+      top: -8vw;
+      left: -10vw;
+      background: rgba(255, 154, 61, 0.4);
+    }
+
+    body::after {
+      right: -10vw;
+      bottom: -14vw;
+      background: rgba(45, 156, 134, 0.22);
     }
 
     .app-shell {
-      width: min(1100px, 100%);
-      margin: 0 auto;
+      width: min(1240px, calc(100% - 32px));
+      margin: 24px auto;
       display: grid;
-      grid-template-columns: minmax(280px, 360px) minmax(320px, 420px);
-      justify-content: center;
-      gap: 28px;
-      align-items: stretch;
+      grid-template-columns: minmax(320px, 1.1fr) minmax(320px, 0.9fr);
+      gap: 24px;
+      align-items: start;
     }
 
     .panel {
       position: relative;
       overflow: hidden;
-      border: 1px solid var(--panel-border);
+      border: 1px solid var(--line);
       border-radius: var(--radius-xl);
-      background: var(--panel);
-      backdrop-filter: blur(18px);
+      background: var(--paper);
+      backdrop-filter: blur(22px);
       box-shadow: var(--shadow);
     }
 
@@ -66,93 +89,129 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.32), transparent 42%);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.42), transparent 38%);
       pointer-events: none;
     }
 
     .hero {
-      padding: 30px;
+      padding: 28px;
       display: grid;
-      gap: 24px;
+      gap: 22px;
     }
 
-    .eyebrow {
+    .topbar,
+    .hero-footer,
+    .history-head,
+    .display-meta,
+    .mode-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .eyebrow,
+    .status-pill,
+    .mode-chip {
       display: inline-flex;
       align-items: center;
       gap: 10px;
       width: fit-content;
       padding: 10px 14px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(20, 33, 61, 0.08);
       color: var(--muted);
-      font-size: 0.9rem;
-      letter-spacing: 0.04em;
       text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.76rem;
     }
 
-    .eyebrow::before {
+    .eyebrow::before,
+    .status-pill::before {
       content: "";
       width: 10px;
       height: 10px;
       border-radius: 999px;
-      background: linear-gradient(135deg, #ff8a3d, #1f8a70);
+      background: linear-gradient(135deg, var(--sun), var(--mint));
     }
 
-    h1 {
+    .hero h1 {
       margin: 0;
-      font-size: clamp(2.4rem, 6vw, 4.6rem);
-      line-height: 0.94;
+      max-width: 9ch;
+      font-family: "Fraunces", serif;
+      font-size: clamp(3rem, 7vw, 5.8rem);
+      line-height: 0.92;
       letter-spacing: -0.05em;
     }
 
-    .hero p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 1.02rem;
-      line-height: 1.7;
-      max-width: 34ch;
-    }
-
-    .stats {
+    .hero-copy {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
+      gap: 14px;
     }
 
-    .stat-card,
-    .shortcut-card,
-    .history-card {
+    .hero-copy p {
+      margin: 0;
+      max-width: 46ch;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 1rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+    }
+
+    .feature-card,
+    .history-card,
+    .metric-card,
+    .shortcut-card {
       border-radius: var(--radius-lg);
       border: 1px solid rgba(20, 33, 61, 0.08);
-      background: rgba(255, 255, 255, 0.54);
+      background: rgba(255, 255, 255, 0.56);
     }
 
-    .stat-card {
-      padding: 16px;
+    .feature-card {
+      min-height: 230px;
+      padding: 22px;
+      display: grid;
+      align-content: end;
+      gap: 14px;
+      background:
+        linear-gradient(160deg, rgba(16, 32, 56, 0.92), rgba(26, 53, 91, 0.86)),
+        rgba(255, 255, 255, 0.12);
+      color: #f6f7fb;
     }
 
-    .stat-card span {
-      display: block;
-      color: var(--muted);
-      font-size: 0.83rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 8px;
+    .feature-card p,
+    .history-card p,
+    .shortcut-card p {
+      margin: 0;
+      line-height: 1.65;
     }
 
-    .stat-card strong {
-      font-size: 1.35rem;
-      line-height: 1.1;
+    .feature-card p {
+      color: rgba(246, 247, 251, 0.74);
+      max-width: 28ch;
+    }
+
+    .feature-card strong {
+      font-family: "Fraunces", serif;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
     }
 
     .stack {
       display: grid;
-      gap: 12px;
+      gap: 16px;
     }
 
     .shortcut-card,
     .history-card {
-      padding: 18px 20px;
+      padding: 20px;
     }
 
     .shortcut-card h2,
@@ -161,36 +220,57 @@
       font-size: 1rem;
     }
 
-    .shortcut-card p,
-    .history-card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
     .shortcut-list {
-      margin: 14px 0 0;
+      margin: 16px 0 0;
       padding: 0;
       list-style: none;
       display: grid;
       gap: 10px;
-      color: var(--ink);
+    }
+
+    .shortcut-list li,
+    .metric-card span:first-child {
+      color: var(--muted);
+      font-size: 0.9rem;
     }
 
     .shortcut-list li {
       display: flex;
+      align-items: center;
       justify-content: space-between;
       gap: 16px;
-      font-size: 0.94rem;
     }
 
     kbd {
-      padding: 4px 8px;
+      padding: 5px 9px;
       border-radius: 10px;
-      background: rgba(20, 33, 61, 0.08);
       border: 1px solid rgba(20, 33, 61, 0.08);
+      background: rgba(20, 33, 61, 0.06);
       font: inherit;
       font-size: 0.84rem;
+      color: var(--ink);
+    }
+
+    .hero-footer {
+      align-items: stretch;
+    }
+
+    .metrics {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      padding: 16px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .metric-card strong {
+      font-size: 1.4rem;
+      line-height: 1;
     }
 
     .calculator {
@@ -201,23 +281,21 @@
 
     .display {
       padding: 24px;
-      min-height: 210px;
+      min-height: 260px;
       border-radius: 30px;
-      background: var(--display);
-      color: var(--display-text);
+      background:
+        radial-gradient(circle at top right, rgba(255, 154, 61, 0.24), transparent 26%),
+        linear-gradient(160deg, var(--night) 0%, var(--night-soft) 100%);
+      color: #f8fafc;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      gap: 12px;
+      gap: 14px;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
     }
 
-    .display-label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      color: var(--display-muted);
+    .display-meta {
+      color: rgba(248, 250, 252, 0.72);
       font-size: 0.82rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -226,22 +304,23 @@
     .display-expression,
     .display-history {
       min-height: 22px;
-      color: var(--display-muted);
+      color: rgba(248, 250, 252, 0.64);
       text-align: right;
       word-break: break-word;
     }
 
-    .display-history {
-      font-size: 0.98rem;
-    }
-
     .display-current {
       text-align: right;
-      font-size: clamp(2.8rem, 8vw, 4.4rem);
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: -0.04em;
+      font-family: "Fraunces", serif;
+      font-size: clamp(3.2rem, 8vw, 5rem);
+      line-height: 0.96;
+      letter-spacing: -0.05em;
       word-break: break-all;
+    }
+
+    .mode-row {
+      flex-wrap: wrap;
+      justify-content: flex-start;
     }
 
     .keys {
@@ -253,20 +332,20 @@
     button {
       appearance: none;
       border: 0;
-      min-height: 72px;
+      min-height: 74px;
       border-radius: var(--radius-md);
-      background: var(--button);
       color: var(--ink);
+      background: rgba(255, 255, 255, 0.62);
       font: inherit;
-      font-size: 1.15rem;
+      font-size: 1.08rem;
       font-weight: 700;
       cursor: pointer;
-      transition: transform 140ms ease, background 140ms ease, box-shadow 140ms ease;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+      transition: transform 150ms ease, background 150ms ease, box-shadow 150ms ease;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
     }
 
     button:hover {
-      background: var(--button-hover);
+      background: rgba(255, 255, 255, 0.9);
       transform: translateY(-1px);
     }
 
@@ -275,25 +354,39 @@
     }
 
     .utility {
-      background: var(--button-strong);
+      background: rgba(255, 247, 236, 0.92);
     }
 
     .operator {
-      background: var(--operator);
-      color: #392100;
+      background: linear-gradient(135deg, #ffb15d, #ff8b37);
+      color: #3c2100;
     }
 
     .equals {
-      background: var(--equals);
-      color: #f3fff8;
+      background: linear-gradient(135deg, #2b9a84, #45b58e);
+      color: #effdf7;
     }
 
     .span-2 {
       grid-column: span 2;
     }
 
+    .history-head {
+      margin-bottom: 16px;
+    }
+
+    .ghost-button {
+      min-height: auto;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(20, 33, 61, 0.06);
+      box-shadow: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
     .history-list {
-      margin: 14px 0 0;
+      margin: 0;
       padding: 0;
       list-style: none;
       display: grid;
@@ -303,9 +396,18 @@
     .history-item {
       display: grid;
       gap: 4px;
-      padding: 12px 14px;
+      padding: 14px 16px;
       border-radius: 16px;
-      background: rgba(255, 255, 255, 0.66);
+      background: rgba(255, 255, 255, 0.72);
+      cursor: pointer;
+      outline: none;
+      transition: transform 150ms ease, background 150ms ease;
+    }
+
+    .history-item:hover,
+    .history-item:focus-visible {
+      background: rgba(255, 255, 255, 0.92);
+      transform: translateX(2px);
     }
 
     .history-expression {
@@ -319,27 +421,26 @@
     }
 
     .empty-history {
+      padding: 8px 2px;
       color: var(--muted);
       font-size: 0.95rem;
     }
 
-    @media (max-width: 920px) {
-      .app-shell {
+    @media (max-width: 980px) {
+      .app-shell,
+      .hero-grid {
         grid-template-columns: 1fr;
-      }
-
-      .hero {
-        order: 2;
-      }
-
-      .calculator {
-        order: 1;
       }
     }
 
-    @media (max-width: 560px) {
+    @media (max-width: 720px) {
       body {
-        padding: 16px;
+        padding-bottom: 16px;
+      }
+
+      .app-shell {
+        width: min(100% - 24px, 1240px);
+        margin: 12px auto;
       }
 
       .hero,
@@ -347,17 +448,24 @@
         padding: 18px;
       }
 
+      .hero-footer,
+      .topbar,
+      .history-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
       .display {
-        min-height: 190px;
+        min-height: 220px;
         padding: 20px;
       }
 
       button {
         min-height: 64px;
-      }
-
-      .stats {
-        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -365,87 +473,112 @@
 <body>
   <main class="app-shell">
     <section class="panel hero" aria-label="Northstar calculator overview">
-      <div class="eyebrow">Modern web UI</div>
-      <div>
-        <h1>Northstar Calculator</h1>
-        <p>
-          A polished browser calculator with keyboard support, live expression context,
-          percent and sign toggles, and a rolling result tape.
-        </p>
+      <div class="topbar">
+        <div class="eyebrow">Modern web calculator</div>
+        <div class="status-pill" id="status-badge">Live</div>
       </div>
 
-      <section class="stats" aria-label="Calculator features">
-        <article class="stat-card">
-          <span>Input</span>
-          <strong>Keyboard + Click</strong>
-        </article>
-        <article class="stat-card">
-          <span>Functions</span>
-          <strong>Basic ops, %, +/-</strong>
-        </article>
-        <article class="stat-card">
-          <span>History</span>
-          <strong>Latest 5 results</strong>
-        </article>
+      <section class="hero-copy">
+        <h1>Northstar Calculator</h1>
+        <p>
+          A rebuilt browser surface for this repository's arithmetic core, with a stronger visual system,
+          quick keyboard control, rolling result tape, and live status metrics that make the calculator feel
+          like a polished product instead of a demo.
+        </p>
       </section>
 
-      <section class="stack">
-        <article class="shortcut-card">
-          <h2>Shortcuts</h2>
-          <p>Use the keyboard exactly like a physical calculator.</p>
-          <ul class="shortcut-list">
-            <li><span>Evaluate</span><kbd>Enter</kbd></li>
-            <li><span>Clear all</span><kbd>Esc</kbd></li>
-            <li><span>Delete digit</span><kbd>Backspace</kbd></li>
-          </ul>
+      <section class="hero-grid">
+        <article class="feature-card">
+          <span class="eyebrow">Designed for flow</span>
+          <strong>Fast enough for muscle memory, clear enough for verification.</strong>
+          <p>Track the active expression, glance at recent outputs, and jump back into prior results with one click.</p>
         </article>
 
-        <article class="history-card">
-          <h2>Result Tape</h2>
-          <p>Recent calculations stay visible so you can reuse or verify them quickly.</p>
-          <ul class="history-list" id="history-list">
-            <li class="empty-history">No calculations yet.</li>
-          </ul>
-        </article>
+        <div class="stack">
+          <article class="shortcut-card">
+            <h2>Keyboard rhythm</h2>
+            <p>Use the same shortcuts you'd expect on a physical calculator or spreadsheet.</p>
+            <ul class="shortcut-list">
+              <li><span>Evaluate</span><kbd>Enter</kbd></li>
+              <li><span>Clear all</span><kbd>Esc</kbd></li>
+              <li><span>Delete digit</span><kbd>Backspace</kbd></li>
+              <li><span>Percent</span><kbd>%</kbd></li>
+            </ul>
+          </article>
+
+          <article class="history-card">
+            <div class="history-head">
+              <div>
+                <h2>Result tape</h2>
+                <p>Reusable results stay pinned here until you clear them.</p>
+              </div>
+              <button class="ghost-button" data-action="clear-history" type="button">Clear tape</button>
+            </div>
+            <ul class="history-list" id="history-list">
+              <li class="empty-history">No calculations yet.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="hero-footer">
+        <div class="metrics" aria-label="Calculator metrics">
+          <article class="metric-card">
+            <span>Total calculations</span>
+            <strong id="metric-operations">0</strong>
+          </article>
+          <article class="metric-card">
+            <span>Last result</span>
+            <strong id="metric-last-result">None yet</strong>
+          </article>
+          <article class="metric-card">
+            <span>Status</span>
+            <strong id="metric-status">Ready for input</strong>
+          </article>
+        </div>
       </section>
     </section>
 
     <section class="panel calculator" aria-label="Calculator">
       <section class="display" aria-live="polite">
-        <div class="display-label">
-          <span>Ready</span>
+        <div class="display-meta">
+          <span>Northstar engine</span>
           <span>Precision 10</span>
         </div>
         <div class="display-expression" id="expression"></div>
         <div class="display-history" id="history"></div>
         <div class="display-current" id="current">0</div>
+        <div class="mode-row">
+          <span class="mode-chip">Pointer + keyboard</span>
+          <span class="mode-chip">Tap history to reuse</span>
+        </div>
       </section>
 
       <section class="keys">
-        <button class="utility" data-action="clear">AC</button>
-        <button class="utility" data-action="delete">DEL</button>
-        <button class="utility" data-action="sign">+/-</button>
-        <button class="operator" data-action="operator" data-value="/">/</button>
+        <button class="utility" data-action="clear" type="button">AC</button>
+        <button class="utility" data-action="delete" type="button">DEL</button>
+        <button class="utility" data-action="sign" type="button">+/-</button>
+        <button class="operator" data-action="operator" data-value="/" type="button">/</button>
 
-        <button class="utility" data-action="percent">%</button>
-        <button data-action="number" data-value="7">7</button>
-        <button data-action="number" data-value="8">8</button>
-        <button data-action="number" data-value="9">9</button>
+        <button class="utility" data-action="percent" type="button">%</button>
+        <button data-action="number" data-value="7" type="button">7</button>
+        <button data-action="number" data-value="8" type="button">8</button>
+        <button data-action="number" data-value="9" type="button">9</button>
 
-        <button class="operator" data-action="operator" data-value="*">*</button>
-        <button data-action="number" data-value="4">4</button>
-        <button data-action="number" data-value="5">5</button>
-        <button data-action="number" data-value="6">6</button>
+        <button class="operator" data-action="operator" data-value="*" type="button">*</button>
+        <button data-action="number" data-value="4" type="button">4</button>
+        <button data-action="number" data-value="5" type="button">5</button>
+        <button data-action="number" data-value="6" type="button">6</button>
 
-        <button class="operator" data-action="operator" data-value="-">-</button>
-        <button data-action="number" data-value="1">1</button>
-        <button data-action="number" data-value="2">2</button>
-        <button data-action="number" data-value="3">3</button>
+        <button class="operator" data-action="operator" data-value="-" type="button">-</button>
+        <button data-action="number" data-value="1" type="button">1</button>
+        <button data-action="number" data-value="2" type="button">2</button>
+        <button data-action="number" data-value="3" type="button">3</button>
 
-        <button class="operator" data-action="operator" data-value="+">+</button>
-        <button class="span-2" data-action="number" data-value="0">0</button>
-        <button data-action="decimal">.</button>
-        <button class="equals" data-action="equals">=</button>
+        <button class="operator" data-action="operator" data-value="+" type="button">+</button>
+        <button class="span-2" data-action="number" data-value="0" type="button">0</button>
+        <button data-action="decimal" type="button">.</button>
+        <button class="equals" data-action="equals" type="button">=</button>
       </section>
     </section>
   </main>
