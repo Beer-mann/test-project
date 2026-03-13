@@ -138,9 +138,23 @@ describe("calculator-ui", () => {
     expect(dom.window.document.querySelectorAll(".history-item")).toHaveLength(5);
   });
 
-<<<<<<< HEAD
   test("reuses a previous result when a history item is activated", () => {
-=======
+    const dom = createDom();
+    const app = createCalculatorApp(dom.window.document, dom.window);
+
+    app.handleAction("number", "9");
+    app.handleAction("operator", "-");
+    app.handleAction("number", "4");
+    app.handleAction("equals");
+
+    const historyItem = dom.window.document.querySelector(".history-item");
+    historyItem.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+
+    expect(app.state.current).toBe("5");
+    expect(app.state.expression).toBe("9 - 4 =");
+    expect(dom.window.document.getElementById("current").textContent).toBe("5");
+  });
+
   test("renders empty history and supports delete plus clear keyboard shortcuts", () => {
     const dom = createDom();
     const app = createCalculatorApp(dom.window.document, dom.window);
@@ -160,23 +174,10 @@ describe("calculator-ui", () => {
   });
 
   test("ignores unsupported actions and keyboard input, and resets delete after overwrite", () => {
->>>>>>> test/add-missing-tests-20260313-3
     const dom = createDom();
     const app = createCalculatorApp(dom.window.document, dom.window);
 
     app.handleAction("number", "9");
-<<<<<<< HEAD
-    app.handleAction("operator", "-");
-    app.handleAction("number", "4");
-    app.handleAction("equals");
-
-    const historyItem = dom.window.document.querySelector(".history-item");
-    historyItem.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
-
-    expect(app.state.current).toBe("5");
-    expect(app.state.expression).toBe("9 - 4 =");
-    expect(dom.window.document.getElementById("current").textContent).toBe("5");
-=======
     app.handleAction("operator", "+");
     app.handleAction("number", "1");
     app.handleAction("equals");
@@ -210,7 +211,6 @@ describe("calculator-ui", () => {
 
     expect(dom.window.document.getElementById("current").textContent).toBe("1.09");
     expect(equalsEvent.preventDefault).toHaveBeenCalled();
->>>>>>> test/add-missing-tests-20260313-3
   });
 
   test("responds to keyboard controls", () => {
