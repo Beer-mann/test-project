@@ -1,43 +1,60 @@
 const { JSDOM } = require("jsdom");
 const { createCalculatorApp, formatValue } = require("./calculator-ui");
 
-const createDom = () =>
-  new JSDOM(`
-    <main class="app-shell">
-      <section class="panel hero">
-        <ul id="history-list"></ul>
-      </section>
-      <section class="panel calculator">
-        <section class="display">
-          <div id="expression"></div>
-          <div id="history"></div>
-          <div id="current">0</div>
+const createDom = () => {
+  const dom = new JSDOM(`
+    <body data-theme="aurora">
+      <main class="app-shell">
+        <section class="panel hero">
+          <button id="theme-toggle" type="button">Switch to Midnight</button>
+          <div id="session-count"></div>
+          <div id="last-result"></div>
+          <div id="theme-name"></div>
+          <button id="clear-history" type="button">Clear tape</button>
+          <ul id="history-list"></ul>
         </section>
-        <section class="keys">
-          <button data-action="clear">AC</button>
-          <button data-action="delete">DEL</button>
-          <button data-action="sign">+/-</button>
-          <button data-action="operator" data-value="/">/</button>
-          <button data-action="percent">%</button>
-          <button data-action="number" data-value="7">7</button>
-          <button data-action="number" data-value="8">8</button>
-          <button data-action="number" data-value="9">9</button>
-          <button data-action="operator" data-value="*">*</button>
-          <button data-action="number" data-value="4">4</button>
-          <button data-action="number" data-value="5">5</button>
-          <button data-action="number" data-value="6">6</button>
-          <button data-action="operator" data-value="-">-</button>
-          <button data-action="number" data-value="1">1</button>
-          <button data-action="number" data-value="2">2</button>
-          <button data-action="number" data-value="3">3</button>
-          <button data-action="operator" data-value="+">+</button>
-          <button data-action="number" data-value="0">0</button>
-          <button data-action="decimal">.</button>
-          <button data-action="equals">=</button>
+        <section class="panel calculator">
+          <section class="display">
+            <button id="copy-result" type="button">Copy result</button>
+            <div id="expression"></div>
+            <div id="history"></div>
+            <div id="current">0</div>
+            <div id="status"></div>
+          </section>
+          <section class="keys">
+            <button data-action="clear">AC</button>
+            <button data-action="delete">DEL</button>
+            <button data-action="sign">+/-</button>
+            <button data-action="operator" data-value="/">/</button>
+            <button data-action="percent">%</button>
+            <button data-action="number" data-value="7">7</button>
+            <button data-action="number" data-value="8">8</button>
+            <button data-action="number" data-value="9">9</button>
+            <button data-action="operator" data-value="*">*</button>
+            <button data-action="number" data-value="4">4</button>
+            <button data-action="number" data-value="5">5</button>
+            <button data-action="number" data-value="6">6</button>
+            <button data-action="operator" data-value="-">-</button>
+            <button data-action="number" data-value="1">1</button>
+            <button data-action="number" data-value="2">2</button>
+            <button data-action="number" data-value="3">3</button>
+            <button data-action="operator" data-value="+">+</button>
+            <button data-action="number" data-value="0">0</button>
+            <button data-action="decimal">.</button>
+            <button data-action="equals">=</button>
+          </section>
         </section>
-      </section>
-    </main>
-  `);
+      </main>
+    </body>
+  `, { url: "https://example.test" });
+
+  Object.defineProperty(dom.window.navigator, "clipboard", {
+    value: { writeText: jest.fn().mockResolvedValue(undefined) },
+    configurable: true
+  });
+
+  return dom;
+};
 
 const click = (documentRef, selector) => {
   documentRef.querySelector(selector).dispatchEvent(
@@ -67,6 +84,9 @@ describe("calculator-ui", () => {
     expect(dom.window.document.getElementById("expression").textContent).toBe("7 + 8 =");
     expect(dom.window.document.querySelectorAll(".history-item")).toHaveLength(1);
     expect(dom.window.document.getElementById("history-list").textContent).toContain("7 + 8");
+    expect(dom.window.localStorage.getItem("northstar-history")).toContain("7 + 8");
+    expect(dom.window.document.getElementById("session-count").textContent).toBe("1 saved");
+    expect(dom.window.document.getElementById("last-result").textContent).toBe("15");
   });
 
   test("supports chained operations and decimal input without duplicating decimals", () => {
@@ -103,6 +123,7 @@ describe("calculator-ui", () => {
     app.handleAction("number", "0");
     app.handleAction("equals");
     expect(app.state.current).toBe("Error");
+    expect(dom.window.document.getElementById("status").textContent).toBe("Cannot divide by zero.");
 
     app.handleAction("number", "4");
     expect(app.state.current).toBe("4");
@@ -153,6 +174,7 @@ describe("calculator-ui", () => {
     expect(app.state.current).toBe("5");
     expect(app.state.expression).toBe("9 - 4 =");
     expect(dom.window.document.getElementById("current").textContent).toBe("5");
+    expect(dom.window.document.getElementById("status").textContent).toBe("Loaded a saved result.");
   });
 
   test("renders empty history and supports delete plus clear keyboard shortcuts", () => {
@@ -213,19 +235,55 @@ describe("calculator-ui", () => {
     expect(equalsEvent.preventDefault).toHaveBeenCalled();
   });
 
-  test("responds to keyboard controls", () => {
+  test("loads persisted history and theme from storage", () => {
+    const dom = createDom();
+    dom.window.localStorage.setItem(
+      "northstar-history",
+      JSON.stringify([{ expression: "3 + 4", result: "7" }])
+    );
+    dom.window.localStorage.setItem("northstar-theme", "midnight");
+
+    createCalculatorApp(dom.window.document, dom.window);
+
+    expect(dom.window.document.body.dataset.theme).toBe("midnight");
+    expect(dom.window.document.getElementById("theme-name").textContent).toBe("Midnight");
+    expect(dom.window.document.getElementById("last-result").textContent).toBe("7");
+    expect(dom.window.document.getElementById("history-list").textContent).toContain("3 + 4");
+  });
+
+  test("toggles theme, persists it, and can clear the saved tape", () => {
+    const dom = createDom();
+    const app = createCalculatorApp(dom.window.document, dom.window);
+
+    click(dom.window.document, "#theme-toggle");
+    expect(app.state.theme).toBe("midnight");
+    expect(dom.window.localStorage.getItem("northstar-theme")).toBe("midnight");
+    expect(dom.window.document.getElementById("theme-name").textContent).toBe("Midnight");
+
+    app.handleAction("number", "4");
+    app.handleAction("operator", "+");
+    app.handleAction("number", "1");
+    app.handleAction("equals");
+    click(dom.window.document, "#clear-history");
+
+    expect(app.state.history).toHaveLength(0);
+    expect(dom.window.localStorage.getItem("northstar-history")).toBe("[]");
+    expect(dom.window.document.querySelector(".empty-history").textContent).toBe("No calculations yet.");
+  });
+
+  test("copies the current result to the clipboard", async () => {
     const dom = createDom();
     createCalculatorApp(dom.window.document, dom.window);
 
     dom.window.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "6" }));
     dom.window.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "*" }));
     dom.window.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "7" }));
-    const enterEvent = new dom.window.KeyboardEvent("keydown", { key: "Enter", bubbles: true });
-    Object.defineProperty(enterEvent, "preventDefault", { value: jest.fn() });
-    dom.window.dispatchEvent(enterEvent);
+    dom.window.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Enter" }));
 
-    expect(dom.window.document.getElementById("current").textContent).toBe("42");
-    expect(dom.window.document.getElementById("expression").textContent).toBe("6 * 7 =");
-    expect(enterEvent.preventDefault).toHaveBeenCalled();
+    click(dom.window.document, "#copy-result");
+    await Promise.resolve();
+
+    expect(dom.window.navigator.clipboard.writeText).toHaveBeenCalledWith("42");
+    expect(dom.window.document.getElementById("status").textContent).toBe("Result copied to clipboard.");
   });
 });
