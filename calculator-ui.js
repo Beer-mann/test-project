@@ -17,7 +17,8 @@
     operator: "",
     overwrite: false,
     expression: "",
-    history: []
+    history: [],
+    totalCalculations: 0
   });
 
   const formatValue = (value) => {
@@ -42,7 +43,17 @@
     const expressionDisplay = documentRef.getElementById("expression");
     const historyList = documentRef.getElementById("history-list");
     const keys = documentRef.querySelector(".keys");
+    const calculationCount = documentRef.getElementById("metric-operations");
+    const lastResult = documentRef.getElementById("metric-last-result");
+    const statusDisplay = documentRef.getElementById("metric-status");
+    const statusBadge = documentRef.getElementById("status-badge");
     const state = createState();
+
+    const setText = (node, value) => {
+      if (node) {
+        node.textContent = value;
+      }
+    };
 
     const calculate = () => {
       const previous = Number(state.previous);
@@ -104,16 +115,32 @@
     };
 
     const render = () => {
-      currentDisplay.textContent = state.current === "Error" ? "Error" : formatValue(state.current);
-      historyDisplay.textContent = state.previous && state.operator
+      const currentValue = state.current === "Error" ? "Error" : formatValue(state.current);
+      const pendingOperation = state.previous && state.operator
         ? `${formatValue(state.previous)} ${state.operator}`
         : "";
-      expressionDisplay.textContent = state.expression;
+      const latestHistoryResult = state.history[0]?.result;
+      const status = state.current === "Error"
+        ? "Recover by typing a number"
+        : state.previous && state.operator
+          ? `Operator armed: ${state.operator}`
+          : state.expression
+            ? "Last result saved to tape"
+            : "Ready for input";
+
+      setText(currentDisplay, currentValue);
+      setText(historyDisplay, pendingOperation);
+      setText(expressionDisplay, state.expression);
+      setText(calculationCount, String(state.totalCalculations));
+      setText(lastResult, latestHistoryResult ? formatValue(latestHistoryResult) : "None yet");
+      setText(statusDisplay, status);
+      setText(statusBadge, state.current === "Error" ? "Error" : "Live");
       renderHistoryList();
     };
 
     const pushHistory = (expression, result) => {
       state.history.unshift({ expression, result });
+      state.totalCalculations += 1;
       if (state.history.length > HISTORY_LIMIT) {
         state.history = state.history.slice(0, HISTORY_LIMIT);
       }
@@ -218,6 +245,10 @@
       state.expression = "";
     };
 
+    const clearHistory = () => {
+      state.history = [];
+    };
+
     const deleteLast = () => {
       if (state.overwrite || state.current === "Error") {
         state.current = "0";
@@ -259,6 +290,8 @@
         toggleSign();
       } else if (action === "percent") {
         applyPercent();
+      } else if (action === "clear-history") {
+        clearHistory();
       } else {
         return;
       }
@@ -266,9 +299,9 @@
       render();
     };
 
-    keys.addEventListener("click", (event) => {
+    documentRef.addEventListener("click", (event) => {
       const button = event.target.closest("button");
-      if (!button) {
+      if (!button || !button.dataset.action) {
         return;
       }
 
