@@ -8,16 +8,19 @@
     :root {
       --page-top: #fbf3e7;
       --page-bottom: #dce7f5;
+      --page-accent: rgba(255, 179, 71, 0.36);
+      --page-accent-2: rgba(31, 138, 112, 0.18);
       --ink: #14213d;
       --muted: #5e6b85;
-      --panel: rgba(255, 252, 247, 0.78);
+      --panel: rgba(255, 252, 247, 0.8);
       --panel-border: rgba(20, 33, 61, 0.1);
       --display: linear-gradient(180deg, #14213d, #1f3b66);
       --display-text: #fdfbf7;
       --display-muted: rgba(253, 251, 247, 0.64);
-      --button: rgba(255, 255, 255, 0.58);
-      --button-strong: #fff7ef;
-      --button-hover: rgba(255, 255, 255, 0.9);
+      --button: rgba(255, 255, 255, 0.62);
+      --button-strong: rgba(255, 247, 239, 0.92);
+      --button-hover: rgba(255, 255, 255, 0.94);
+      --button-active: rgba(31, 138, 112, 0.18);
       --operator: linear-gradient(135deg, #ff8a3d, #ffb347);
       --equals: linear-gradient(135deg, #1f8a70, #3eb489);
       --shadow: 0 28px 70px rgba(20, 33, 61, 0.16);
@@ -26,8 +29,35 @@
       --radius-md: 18px;
     }
 
+    body[data-theme="midnight"] {
+      --page-top: #09111f;
+      --page-bottom: #111b2e;
+      --page-accent: rgba(255, 145, 77, 0.18);
+      --page-accent-2: rgba(88, 197, 168, 0.16);
+      --ink: #eef4ff;
+      --muted: #9db0cb;
+      --panel: rgba(12, 19, 33, 0.76);
+      --panel-border: rgba(238, 244, 255, 0.08);
+      --display: linear-gradient(180deg, #f4f8ff, #c6d7f4);
+      --display-text: #10203d;
+      --display-muted: rgba(16, 32, 61, 0.56);
+      --button: rgba(255, 255, 255, 0.08);
+      --button-strong: rgba(255, 255, 255, 0.12);
+      --button-hover: rgba(255, 255, 255, 0.16);
+      --button-active: rgba(88, 197, 168, 0.24);
+      --shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
+    }
+
     * {
       box-sizing: border-box;
+    }
+
+    html {
+      color-scheme: light;
+    }
+
+    body[data-theme="midnight"] {
+      color-scheme: dark;
     }
 
     body {
@@ -37,16 +67,24 @@
       color: var(--ink);
       font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(255, 179, 71, 0.36), transparent 26%),
-        radial-gradient(circle at right, rgba(31, 138, 112, 0.18), transparent 30%),
+        radial-gradient(circle at top left, var(--page-accent), transparent 26%),
+        radial-gradient(circle at right, var(--page-accent-2), transparent 30%),
         linear-gradient(180deg, var(--page-top), var(--page-bottom));
+      transition: background 220ms ease, color 220ms ease;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
     }
 
     .app-shell {
-      width: min(1100px, 100%);
+      width: min(1120px, 100%);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: minmax(280px, 360px) minmax(320px, 420px);
+      grid-template-columns: minmax(300px, 380px) minmax(320px, 440px);
       justify-content: center;
       gap: 28px;
       align-items: stretch;
@@ -66,7 +104,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.32), transparent 42%);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 42%);
       pointer-events: none;
     }
 
@@ -74,6 +112,13 @@
       padding: 30px;
       display: grid;
       gap: 24px;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
     }
 
     .eyebrow {
@@ -98,6 +143,24 @@
       background: linear-gradient(135deg, #ff8a3d, #1f8a70);
     }
 
+    .theme-toggle,
+    .ghost-button {
+      appearance: none;
+      border: 1px solid rgba(20, 33, 61, 0.1);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.5);
+      color: var(--ink);
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform 140ms ease, background 140ms ease;
+    }
+
+    .theme-toggle:hover,
+    .ghost-button:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.75);
+    }
+
     h1 {
       margin: 0;
       font-size: clamp(2.4rem, 6vw, 4.6rem);
@@ -110,7 +173,7 @@
       color: var(--muted);
       font-size: 1.02rem;
       line-height: 1.7;
-      max-width: 34ch;
+      max-width: 35ch;
     }
 
     .stats {
@@ -141,6 +204,7 @@
     }
 
     .stat-card strong {
+      display: block;
       font-size: 1.35rem;
       line-height: 1.1;
     }
@@ -155,9 +219,17 @@
       padding: 18px 20px;
     }
 
+    .history-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
     .shortcut-card h2,
     .history-card h2 {
-      margin: 0 0 8px;
+      margin: 0;
       font-size: 1rem;
     }
 
@@ -189,8 +261,48 @@
       border-radius: 10px;
       background: rgba(20, 33, 61, 0.08);
       border: 1px solid rgba(20, 33, 61, 0.08);
-      font: inherit;
       font-size: 0.84rem;
+    }
+
+    .history-list {
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+
+    .history-item,
+    .empty-history {
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid rgba(20, 33, 61, 0.08);
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .history-item {
+      display: grid;
+      gap: 4px;
+      cursor: pointer;
+      outline: none;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+    }
+
+    .history-item:hover,
+    .history-item:focus-visible {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.68);
+      border-color: rgba(31, 138, 112, 0.28);
+    }
+
+    .history-expression {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .history-result {
+      font-size: 1.06rem;
+      font-weight: 700;
     }
 
     .calculator {
@@ -201,7 +313,7 @@
 
     .display {
       padding: 24px;
-      min-height: 210px;
+      min-height: 230px;
       border-radius: 30px;
       background: var(--display);
       color: var(--display-text);
@@ -210,6 +322,13 @@
       justify-content: flex-end;
       gap: 12px;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .display-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
     }
 
     .display-label {
@@ -221,10 +340,27 @@
       font-size: 0.82rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
+      flex: 1;
+    }
+
+    .display-tools {
+      display: flex;
+      gap: 10px;
+    }
+
+    .display-tool {
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--display-text);
+      padding: 8px 12px;
+      cursor: pointer;
     }
 
     .display-expression,
-    .display-history {
+    .display-history,
+    .display-status {
       min-height: 22px;
       color: var(--display-muted);
       text-align: right;
@@ -233,6 +369,10 @@
 
     .display-history {
       font-size: 0.98rem;
+    }
+
+    .display-status {
+      font-size: 0.88rem;
     }
 
     .display-current {
@@ -250,159 +390,134 @@
       gap: 12px;
     }
 
-    button {
+    button.calc-key {
       appearance: none;
       border: 0;
       min-height: 72px;
       border-radius: var(--radius-md);
       background: var(--button);
       color: var(--ink);
-      font: inherit;
-      font-size: 1.15rem;
+      font-size: 1.12rem;
       font-weight: 700;
       cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52);
       transition: transform 140ms ease, background 140ms ease, box-shadow 140ms ease;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
     }
 
-    button:hover {
+    button.calc-key:hover {
+      transform: translateY(-2px);
       background: var(--button-hover);
-      transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(20, 33, 61, 0.08);
     }
 
-    button:active {
-      transform: translateY(1px) scale(0.99);
+    button.calc-key:active,
+    button.calc-key.is-active {
+      transform: translateY(0);
+      background: var(--button-active);
+      box-shadow: inset 0 0 0 1px rgba(31, 138, 112, 0.18);
     }
 
-    .utility {
+    button.utility {
       background: var(--button-strong);
     }
 
-    .operator {
+    button.operator {
+      color: #fff;
       background: var(--operator);
-      color: #392100;
     }
 
-    .equals {
+    button.equals {
+      color: #fff;
       background: var(--equals);
-      color: #f3fff8;
     }
 
     .span-2 {
       grid-column: span 2;
     }
 
-    .history-list {
-      margin: 14px 0 0;
-      padding: 0;
-      list-style: none;
-      display: grid;
-      gap: 10px;
-    }
-
-    .history-item {
-      display: grid;
-      gap: 4px;
-      padding: 12px 14px;
-      border-radius: 16px;
-      background: rgba(255, 255, 255, 0.66);
-    }
-
-    .history-expression {
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    .history-result {
-      font-size: 1rem;
-      font-weight: 700;
-    }
-
-    .empty-history {
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    @media (max-width: 920px) {
-      .app-shell {
-        grid-template-columns: 1fr;
-      }
-
-      .hero {
-        order: 2;
-      }
-
-      .calculator {
-        order: 1;
-      }
-    }
-
-    @media (max-width: 560px) {
+    @media (max-width: 980px) {
       body {
-        padding: 16px;
-      }
-
-      .hero,
-      .calculator {
         padding: 18px;
       }
 
-      .display {
-        min-height: 190px;
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero,
+      .calculator {
         padding: 20px;
       }
 
-      button {
-        min-height: 64px;
+      .hero-top,
+      .display-meta,
+      .history-heading {
+        flex-direction: column;
+        align-items: stretch;
       }
 
       .stats {
         grid-template-columns: 1fr;
       }
+
+      .display-tools {
+        justify-content: flex-end;
+      }
+
+      button.calc-key {
+        min-height: 64px;
+      }
     }
   </style>
 </head>
-<body>
+<body data-theme="aurora">
   <main class="app-shell">
-    <section class="panel hero" aria-label="Northstar calculator overview">
-      <div class="eyebrow">Modern web UI</div>
-      <div>
-        <h1>Northstar Calculator</h1>
-        <p>
-          A polished browser calculator with keyboard support, live expression context,
-          percent and sign toggles, and a rolling result tape.
-        </p>
+    <section class="panel hero">
+      <div class="hero-top">
+        <span class="eyebrow">Northstar OS</span>
+        <button class="theme-toggle" id="theme-toggle" type="button">Switch to Midnight</button>
       </div>
 
-      <section class="stats" aria-label="Calculator features">
+      <div>
+        <h1>Modern math, without the dead air.</h1>
+        <p>Northstar keeps the calculator familiar, then layers in tape persistence, quick reuse, and a cleaner command deck for everyday arithmetic.</p>
+      </div>
+
+      <section class="stats" aria-label="Session stats">
         <article class="stat-card">
-          <span>Input</span>
-          <strong>Keyboard + Click</strong>
+          <span>Session tape</span>
+          <strong id="session-count">0 saved</strong>
         </article>
         <article class="stat-card">
-          <span>Functions</span>
-          <strong>Basic ops, %, +/-</strong>
+          <span>Last result</span>
+          <strong id="last-result">--</strong>
         </article>
         <article class="stat-card">
-          <span>History</span>
-          <strong>Latest 5 results</strong>
+          <span>Theme</span>
+          <strong id="theme-name">Aurora</strong>
         </article>
       </section>
 
       <section class="stack">
         <article class="shortcut-card">
-          <h2>Shortcuts</h2>
-          <p>Use the keyboard exactly like a physical calculator.</p>
+          <h2>Keyboard Deck</h2>
+          <p>Power through input with direct keyboard control and a visual press state for the active key.</p>
           <ul class="shortcut-list">
             <li><span>Evaluate</span><kbd>Enter</kbd></li>
+            <li><span>Percent</span><kbd>%</kbd></li>
             <li><span>Clear all</span><kbd>Esc</kbd></li>
             <li><span>Delete digit</span><kbd>Backspace</kbd></li>
           </ul>
         </article>
 
         <article class="history-card">
-          <h2>Result Tape</h2>
-          <p>Recent calculations stay visible so you can reuse or verify them quickly.</p>
+          <div class="history-heading">
+            <h2>Result Tape</h2>
+            <button class="ghost-button" id="clear-history" type="button">Clear tape</button>
+          </div>
+          <p>Recent calculations persist between visits so you can jump back into the last flow immediately.</p>
           <ul class="history-list" id="history-list">
             <li class="empty-history">No calculations yet.</li>
           </ul>
@@ -412,40 +527,46 @@
 
     <section class="panel calculator" aria-label="Calculator">
       <section class="display" aria-live="polite">
-        <div class="display-label">
-          <span>Ready</span>
-          <span>Precision 10</span>
+        <div class="display-meta">
+          <div class="display-label">
+            <span>Ready</span>
+            <span>Precision 10</span>
+          </div>
+          <div class="display-tools">
+            <button class="display-tool" id="copy-result" type="button">Copy result</button>
+          </div>
         </div>
         <div class="display-expression" id="expression"></div>
         <div class="display-history" id="history"></div>
         <div class="display-current" id="current">0</div>
+        <div class="display-status" id="status">Tape sync is on.</div>
       </section>
 
       <section class="keys">
-        <button class="utility" data-action="clear">AC</button>
-        <button class="utility" data-action="delete">DEL</button>
-        <button class="utility" data-action="sign">+/-</button>
-        <button class="operator" data-action="operator" data-value="/">/</button>
+        <button class="calc-key utility" data-action="clear">AC</button>
+        <button class="calc-key utility" data-action="delete">DEL</button>
+        <button class="calc-key utility" data-action="sign">+/-</button>
+        <button class="calc-key operator" data-action="operator" data-value="/">/</button>
 
-        <button class="utility" data-action="percent">%</button>
-        <button data-action="number" data-value="7">7</button>
-        <button data-action="number" data-value="8">8</button>
-        <button data-action="number" data-value="9">9</button>
+        <button class="calc-key utility" data-action="percent">%</button>
+        <button class="calc-key" data-action="number" data-value="7">7</button>
+        <button class="calc-key" data-action="number" data-value="8">8</button>
+        <button class="calc-key" data-action="number" data-value="9">9</button>
 
-        <button class="operator" data-action="operator" data-value="*">*</button>
-        <button data-action="number" data-value="4">4</button>
-        <button data-action="number" data-value="5">5</button>
-        <button data-action="number" data-value="6">6</button>
+        <button class="calc-key operator" data-action="operator" data-value="*">*</button>
+        <button class="calc-key" data-action="number" data-value="4">4</button>
+        <button class="calc-key" data-action="number" data-value="5">5</button>
+        <button class="calc-key" data-action="number" data-value="6">6</button>
 
-        <button class="operator" data-action="operator" data-value="-">-</button>
-        <button data-action="number" data-value="1">1</button>
-        <button data-action="number" data-value="2">2</button>
-        <button data-action="number" data-value="3">3</button>
+        <button class="calc-key operator" data-action="operator" data-value="-">-</button>
+        <button class="calc-key" data-action="number" data-value="1">1</button>
+        <button class="calc-key" data-action="number" data-value="2">2</button>
+        <button class="calc-key" data-action="number" data-value="3">3</button>
 
-        <button class="operator" data-action="operator" data-value="+">+</button>
-        <button class="span-2" data-action="number" data-value="0">0</button>
-        <button data-action="decimal">.</button>
-        <button class="equals" data-action="equals">=</button>
+        <button class="calc-key operator" data-action="operator" data-value="+">+</button>
+        <button class="calc-key span-2" data-action="number" data-value="0">0</button>
+        <button class="calc-key" data-action="decimal">.</button>
+        <button class="calc-key equals" data-action="equals">=</button>
       </section>
     </section>
   </main>
