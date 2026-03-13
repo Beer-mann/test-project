@@ -108,6 +108,18 @@ describe("calculator-ui", () => {
     expect(app.state.current).toBe("4");
   });
 
+  test("deleting a negative single digit resets to zero instead of leaving an invalid dash", () => {
+    const dom = createDom();
+    const app = createCalculatorApp(dom.window.document, dom.window);
+
+    app.handleAction("number", "5");
+    app.handleAction("sign");
+    app.handleAction("delete");
+
+    expect(app.state.current).toBe("0");
+    expect(dom.window.document.getElementById("current").textContent).toBe("0");
+  });
+
   test("limits result history to the latest five entries", () => {
     const dom = createDom();
     const app = createCalculatorApp(dom.window.document, dom.window);
@@ -124,6 +136,23 @@ describe("calculator-ui", () => {
     expect(app.state.history[0].expression).toBe("6 + 1");
     expect(app.state.history[4].expression).toBe("2 + 1");
     expect(dom.window.document.querySelectorAll(".history-item")).toHaveLength(5);
+  });
+
+  test("reuses a previous result when a history item is activated", () => {
+    const dom = createDom();
+    const app = createCalculatorApp(dom.window.document, dom.window);
+
+    app.handleAction("number", "9");
+    app.handleAction("operator", "-");
+    app.handleAction("number", "4");
+    app.handleAction("equals");
+
+    const historyItem = dom.window.document.querySelector(".history-item");
+    historyItem.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+
+    expect(app.state.current).toBe("5");
+    expect(app.state.expression).toBe("9 - 4 =");
+    expect(dom.window.document.getElementById("current").textContent).toBe("5");
   });
 
   test("responds to keyboard controls", () => {

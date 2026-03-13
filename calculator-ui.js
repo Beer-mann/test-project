@@ -7,6 +7,9 @@
   root.CalculatorApp = factory();
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   const HISTORY_LIMIT = 5;
+  const DISPLAY_FORMATTER = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 10
+  });
 
   const createState = () => ({
     current: "0",
@@ -27,9 +30,7 @@
       return "Error";
     }
 
-    return new Intl.NumberFormat("en-US", {
-      maximumFractionDigits: 10
-    }).format(number);
+    return DISPLAY_FORMATTER.format(number);
   };
 
   const buildExpression = (left, operator, right) =>
@@ -80,9 +81,13 @@
         return;
       }
 
-      state.history.forEach((entry) => {
+      state.history.forEach((entry, index) => {
         const item = documentRef.createElement("li");
         item.className = "history-item";
+        item.dataset.historyIndex = String(index);
+        item.tabIndex = 0;
+        item.setAttribute("role", "button");
+        item.setAttribute("aria-label", `Reuse result ${formatValue(entry.result)}`);
 
         const expression = documentRef.createElement("span");
         expression.className = "history-expression";
@@ -220,7 +225,21 @@
         return;
       }
 
-      state.current = state.current.length > 1 ? state.current.slice(0, -1) : "0";
+      const nextValue = state.current.length > 1 ? state.current.slice(0, -1) : "0";
+      state.current = nextValue === "-" ? "0" : nextValue;
+    };
+
+    const reuseHistory = (index) => {
+      const entry = state.history[index];
+      if (!entry) {
+        return;
+      }
+
+      state.current = entry.result;
+      state.previous = "";
+      state.operator = "";
+      state.overwrite = true;
+      state.expression = `${entry.expression} =`;
     };
 
     const handleAction = (action, value) => {
@@ -254,6 +273,31 @@
       }
 
       handleAction(button.dataset.action, button.dataset.value);
+    });
+
+    historyList?.addEventListener("click", (event) => {
+      const item = event.target.closest("[data-history-index]");
+      if (!item) {
+        return;
+      }
+
+      reuseHistory(Number(item.dataset.historyIndex));
+      render();
+    });
+
+    historyList?.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+
+      const item = event.target.closest("[data-history-index]");
+      if (!item) {
+        return;
+      }
+
+      event.preventDefault();
+      reuseHistory(Number(item.dataset.historyIndex));
+      render();
     });
 
     windowRef.addEventListener("keydown", (event) => {
