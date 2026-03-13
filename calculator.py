@@ -1,11 +1,28 @@
-def add(a, b):
-    # TODO: Add input validation for the add and multiply functions
+def _validate_numbers(a, b):
+    if isinstance(a, bool) or isinstance(b, bool):
+        raise ValueError("Boolean values are not supported")
+
     if not (isinstance(a, (int, float)) and isinstance(b, (int, float))):
         raise ValueError("Both inputs must be numbers")
+
+
+def add(a, b):
+    _validate_numbers(a, b)
     return a + b
 
+
+def subtract(a, b):
+    _validate_numbers(a, b)
+    return a - b
+
+
 def multiply(a, b):
-    # TODO: Add input validation for the add and multiply functions
-    if not (isinstance(a, (int, float)) and isinstance(b, (int, float))):
-        raise ValueError("Both inputs must be numbers")
+    _validate_numbers(a, b)
     return a * b
+
+
+def divide(a, b):
+    _validate_numbers(a, b)
+    if b == 0:
+        raise ZeroDivisionError("Cannot divide by zero")
+    return a / b
