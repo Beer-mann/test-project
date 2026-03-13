@@ -138,11 +138,34 @@ describe("calculator-ui", () => {
     expect(dom.window.document.querySelectorAll(".history-item")).toHaveLength(5);
   });
 
+<<<<<<< HEAD
   test("reuses a previous result when a history item is activated", () => {
+=======
+  test("renders empty history and supports delete plus clear keyboard shortcuts", () => {
+    const dom = createDom();
+    const app = createCalculatorApp(dom.window.document, dom.window);
+
+    expect(dom.window.document.querySelector(".empty-history").textContent).toBe("No calculations yet.");
+
+    app.handleAction("number", "1");
+    app.handleAction("number", "2");
+    dom.window.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Backspace" }));
+    expect(app.state.current).toBe("1");
+
+    dom.window.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Escape" }));
+    expect(app.state.current).toBe("0");
+    expect(app.state.previous).toBe("");
+    expect(app.state.operator).toBe("");
+    expect(dom.window.document.getElementById("expression").textContent).toBe("");
+  });
+
+  test("ignores unsupported actions and keyboard input, and resets delete after overwrite", () => {
+>>>>>>> test/add-missing-tests-20260313-3
     const dom = createDom();
     const app = createCalculatorApp(dom.window.document, dom.window);
 
     app.handleAction("number", "9");
+<<<<<<< HEAD
     app.handleAction("operator", "-");
     app.handleAction("number", "4");
     app.handleAction("equals");
@@ -153,6 +176,41 @@ describe("calculator-ui", () => {
     expect(app.state.current).toBe("5");
     expect(app.state.expression).toBe("9 - 4 =");
     expect(dom.window.document.getElementById("current").textContent).toBe("5");
+=======
+    app.handleAction("operator", "+");
+    app.handleAction("number", "1");
+    app.handleAction("equals");
+
+    expect(app.state.overwrite).toBe(true);
+    app.handleAction("delete");
+    expect(app.state.current).toBe("0");
+    expect(app.state.overwrite).toBe(false);
+
+    app.handleAction("unknown", "ignored");
+    expect(app.state.current).toBe("0");
+
+    dom.window.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "x" }));
+    expect(app.state.current).toBe("0");
+  });
+
+  test("supports equals and percent keyboard input", () => {
+    const dom = createDom();
+    createCalculatorApp(dom.window.document, dom.window);
+
+    dom.window.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "9" }));
+    dom.window.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "%" }));
+    expect(dom.window.document.getElementById("current").textContent).toBe("0.09");
+
+    const equalsEvent = new dom.window.KeyboardEvent("keydown", { key: "=" });
+    Object.defineProperty(equalsEvent, "preventDefault", { value: jest.fn() });
+
+    dom.window.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "+" }));
+    dom.window.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "1" }));
+    dom.window.dispatchEvent(equalsEvent);
+
+    expect(dom.window.document.getElementById("current").textContent).toBe("1.09");
+    expect(equalsEvent.preventDefault).toHaveBeenCalled();
+>>>>>>> test/add-missing-tests-20260313-3
   });
 
   test("responds to keyboard controls", () => {
